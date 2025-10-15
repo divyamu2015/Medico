@@ -4,6 +4,9 @@ import 'package:flutter_slider_drawer/flutter_slider_drawer.dart';
 import 'package:medico_project/authantication/login_screen/login_view_page.dart';
 import 'package:medico_project/screens/booking_page.dart/booking_page_view.dart';
 import 'package:medico_project/screens/chatbot/chatbot_view.dart';
+import 'package:medico_project/screens/feedback_page.dart';
+import 'package:medico_project/screens/payment.dart';
+import 'package:medico_project/screens/payment_history_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.userId});
@@ -210,6 +213,26 @@ class _HomeScreenState extends State<HomeScreen>
                 style: TextStyle(color: Color.fromARGB(255, 10, 10, 10)),
               ),
             ),
+            //PaymentOpp
+            ListTile(
+              leading: Icon(
+                Icons.paypal_sharp,
+                color: Color.fromARGB(255, 163, 79, 182),
+              ),
+              title: Text(
+                "PaymentOpp",
+                style: TextStyle(color: Color.fromARGB(255, 10, 10, 10)),
+              ),
+               onTap: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return PaymentOpp(userId: userId!);
+                    },
+                  ),
+                );
+              },
+            ),
             ListTile(
               leading: Icon(
                 Icons.paypal_sharp,
@@ -219,6 +242,36 @@ class _HomeScreenState extends State<HomeScreen>
                 "Payment History",
                 style: TextStyle(color: Color.fromARGB(255, 10, 10, 10)),
               ),
+              //HistoryPage
+              onTap: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return HistoryPage(userid: userId!);
+                    },
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.paypal_sharp,
+                color: Color.fromARGB(255, 163, 79, 182),
+              ),
+              title: Text(
+                "Feeback",
+                style: TextStyle(color: Color.fromARGB(255, 10, 10, 10)),
+              ),
+              //HistoryPage
+              onTap: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return FeedbackPage(userid: userId!);
+                    },
+                  ),
+                );
+              },
             ),
             ListTile(
               leading: Icon(
