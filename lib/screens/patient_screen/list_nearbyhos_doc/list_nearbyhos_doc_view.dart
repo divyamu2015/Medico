@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:medico_project/screens/patient_screen/bokk_now_screen/book_now_view.dart';
 import 'package:medico_project/screens/patient_screen/book_now_hos_screen/book_now_view.dart';
-import 'package:medico_project/screens/patient_screen/list_nearbyclinc_doc/bloc/list_nearbyclinc_doc_bloc.dart';
 import 'package:medico_project/screens/patient_screen/list_nearbyhos_doc/bloc/list_nearbyhos_bloc.dart';
 import 'package:medico_project/screens/patient_screen/list_nearbyhos_doc/list_nearbyhos_doc_model.dart';
 

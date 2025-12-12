@@ -161,60 +161,28 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<void> _showSeverityDialog(String severity,String disease) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Severity Level'),
-          content: Text('Severity: $severity'),
-          actions: <Widget>[
-            Text('Disease:- $disease'),
-            TextButton(
-              child: Text('OK'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<Map<String, dynamic>> _fetchPredictionResult() async {
-    final url =
-        'https://417sptdw-8002.inc1.devtunnels.ms/userapp/get_prediction_result/$userId/';
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to fetch prediction result');
-    }
-  }
-
- Future<void> _showRemedyDialog(String remedyText) async {
+  Future<void> _showSeverityDialog(String severity, String disease) async {
   return showDialog<void>(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: const Text('Remedy'),
-        content: SingleChildScrollView(
-          child: Text(
-            remedyText.isNotEmpty ? remedyText : 'No remedy provided by system.',
-            style: const TextStyle(fontSize: 16),
-          ),
+        title: const Text('Severity Level'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Severity: $severity'),
+            const SizedBox(height: 8),
+            Text('Disease: $disease'),
+          ],
         ),
         actions: <Widget>[
           TextButton(
             child: const Text('OK'),
-            onPressed: () => Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) {
-                  return HomeScreen(userId: userId!);
-                },
-              ),
-            ),
+            onPressed: () {
+              Navigator.of(context).pop(); // Just pop!
+            },
           ),
         ],
       );
@@ -223,54 +191,124 @@ class _ChatScreenState extends State<ChatScreen> {
 }
 
 
-  Future<void> _showResultFlow() async {
-    try {
-      final prediction = await _fetchPredictionResult();
-      final String severity = prediction['severity_level'] ?? '';
-      final String disease = prediction['predicted_disease'] ?? '';
-      final String remedy = (prediction['remedy_text'] ?? '').toString().trim();
+  Future<Map<String, dynamic>> _fetchPredictionResult() async {
+    final url =
+        'https://417sptdw-8002.inc1.devtunnels.ms/userapp/get_prediction_result/$userId/';
+    final response = await http.get(Uri.parse(url));
 
-
-      await _showSeverityDialog(severity,disease);
-
-      if (severity.toLowerCase() == "low") {
-        await showDialog<void>(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Predicted Disease'),
-             content: SingleChildScrollView(child: Text(remedy.isNotEmpty ? remedy : 'No remedy available.')),
- actions: <Widget>[
-                TextButton(
-                  child: Text('Next'),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close this dialog
-                    _showRemedyDialog(remedy); // Show the remedy dialog
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      } else if (severity == "Medium") {
-         // 
-           
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => FindDoctorScreen(userId: userId!,)),
-        );
-      }
-      else if (severity == "High"){
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => FindHosDoctorScreen(userId: userId!,)),
-        );
-      }
-    } catch (e) {
-      print(e);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      print("Prediction API Response: $data");
+      return data;
+    } else {
+      throw Exception('Failed to fetch prediction result');
     }
   }
+
+  Future<void> _showRemedyDialog(String remedyText) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Remedy'),
+          content: SingleChildScrollView(
+            child: Text(
+              remedyText.isNotEmpty
+                  ? remedyText
+                  : 'No remedy provided by system.',
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () async {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return HomeScreen(userId: userId!);
+                    },
+                  ),
+                );
+                //   await Future.delayed(const Duration(milliseconds: 200));
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showPredictionDialog(String predictionText) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Prediction Result'),
+          content: SingleChildScrollView(
+            child: Text(
+              predictionText.isNotEmpty
+                  ? predictionText
+                  : 'No prediction details provided.',
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Next'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close this dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+ Future<void> _showResultFlow() async {
+  try {
+    final prediction = await _fetchPredictionResult();
+    final String severity = (prediction['severity_level'] ?? 'Not determined').toString().trim();
+    final String disease = (prediction['predicted_disease'] ?? 'No disease detected').toString().trim();
+    final String remedy = (prediction['remedy_text'] ?? 'No remedy provided.').toString().trim();
+
+    await _showSeverityDialog(severity, disease); // Wait for user OK
+
+    if (severity.toLowerCase() == "low") {
+      String predictionDetails = disease; // or more if needed
+      await _showPredictionDialog(predictionDetails);
+      await _showRemedyDialog(remedy);
+    }
+    else if (severity.toLowerCase() == "medium") {
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => FindDoctorScreen(userId: userId!)),
+        );
+      }
+    }
+    else if (severity.toLowerCase() == "high") {
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => FindHosDoctorScreen(userId: userId!)),
+        );
+      }
+    }
+
+  } catch (e) {
+    debugPrint('Error fetching prediction result: $e');
+    _addBotMessage("Sorry, could not determine severity level.");
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {

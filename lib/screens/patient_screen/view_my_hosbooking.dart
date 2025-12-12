@@ -23,6 +23,7 @@ class _HosDoctorAppointmentsPageState extends State<HosDoctorAppointmentsPage> {
   void initState() {
     super.initState();
     fetchBookings();
+    fetchClinBookings();
     userId = widget.userId;
   }
 
@@ -31,35 +32,74 @@ class _HosDoctorAppointmentsPageState extends State<HosDoctorAppointmentsPage> {
     return DateFormat('dd-MM-yyyy').format(date);
   }
 
-  Future<void> fetchBookings() async {
-    setState(() {
-      isLoading = true;
-      errorText = null;
-    });
-    final url = Uri.parse(
-      'https://417sptdw-8002.inc1.devtunnels.ms/userapp/user/${widget.userId}/hospital/bookings/',
-    );
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        setState(() {
-          bookings = jsonDecode(response.body) as List<dynamic>;
-          print(bookings);
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          errorText = 'Failed to load bookings';
-          isLoading = false;
-        });
-      }
-    } catch (e) {
+Future<void> fetchBookings() async {
+  setState(() {
+    isLoading = true;
+    errorText = null;
+  });
+  final url = Uri.parse(
+    'https://417sptdw-8002.inc1.devtunnels.ms/userapp/user/${widget.userId}/hospital/bookings/',
+  );
+  try {
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final hospitalBookings = jsonDecode(response.body) as List<dynamic>;
       setState(() {
-        errorText = 'Error: $e';
+        bookings.addAll(hospitalBookings);  // Append hospital bookings
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        errorText = 'Failed to load hospital bookings';
         isLoading = false;
       });
     }
+  } catch (e) {
+    setState(() {
+      errorText = 'Error: $e';
+      isLoading = false;
+    });
   }
+}
+
+Future<void> fetchClinBookings() async {
+  setState(() {
+    isLoading = true;
+    errorText = null;
+  });
+  final url = Uri.parse(
+    'https://417sptdw-8002.inc1.devtunnels.ms/userapp/user/${widget.userId}/clinic/bookings/',
+  );
+  try {
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final clinicBookings = jsonDecode(response.body) as List<dynamic>;
+      setState(() {
+        bookings.addAll(clinicBookings);  // Append clinic bookings
+        // Optionally sort here by date & time descending or ascending
+        bookings.sort((a, b) {
+          final dateA = DateTime.parse(a['date']);
+          final dateB = DateTime.parse(b['date']);
+          // To sort earliest first, use dateA.compareTo(dateB)
+          // To sort latest first, use dateB.compareTo(dateA)
+          return dateA.compareTo(dateB);
+        });
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        errorText = 'Failed to load clinic bookings';
+        isLoading = false;
+      });
+    }
+  } catch (e) {
+    setState(() {
+      errorText = 'Error: $e';
+      isLoading = false;
+    });
+  }
+}
+
 
   // String formatDate(String date) {
   //   // Expects "2025-11-01" and returns "November 01, 2025"

@@ -33,34 +33,65 @@ class _HosDoctorAppointmentsPageState extends State<HosDoctorAppointmentsPage> {
   }
 
   Future<void> fetchBookings() async {
-    setState(() {
-      isLoading = true;
-      errorText = null;
-    });
-    final url = Uri.parse(
-      'https://417sptdw-8002.inc1.devtunnels.ms/userapp/hospital/doctor/$doctorId/bookings/',
-    );
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        setState(() {
-          bookings = jsonDecode(response.body) as List<dynamic>;
-          print('----$bookings');
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          errorText = 'Failed to load bookings';
-          isLoading = false;
-        });
-      }
-    } catch (e) {
+  setState(() {
+    isLoading = true;
+    errorText = null;
+  });
+  final url = Uri.parse(
+    'https://417sptdw-8002.inc1.devtunnels.ms/userapp/hospital/doctor/${widget.doctorId}/bookings/',
+  );
+  print('Fetching bookings from: $url'); // Debug log
+  try {
+    final response = await http.get(url);
+    print('Response code: ${response.statusCode}'); // Debug log
+    if (response.statusCode == 200) {
       setState(() {
-        errorText = 'Error: $e';
+        bookings = jsonDecode(response.body) as List<dynamic>;
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        errorText = 'Failed to load bookings: ${response.statusCode}';
         isLoading = false;
       });
     }
+  } catch (e) {
+    setState(() {
+      errorText = 'Error: $e';
+      isLoading = false;
+    });
   }
+}
+
+  // Future<void> fetchBookings() async {
+  //   setState(() {
+  //     isLoading = true;
+  //     errorText = null;
+  //   });
+  //   final url = Uri.parse(
+  //     'https://417sptdw-8002.inc1.devtunnels.ms/userapp/hospital/doctor/$doctorId/bookings/',
+  //   );
+  //   try {
+  //     final response = await http.get(url);
+  //     if (response.statusCode == 200) {
+  //       setState(() {
+  //         bookings = jsonDecode(response.body) as List<dynamic>;
+  //         print('----$bookings');
+  //         isLoading = false;
+  //       });
+  //     } else {
+  //       setState(() {
+  //         errorText = 'Failed to load bookings';
+  //         isLoading = false;
+  //       });
+  //     }
+  //   } catch (e) {
+  //     setState(() {
+  //       errorText = 'Error: $e';
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
 
   // String formatDate(String date) {
   //   // Expects "2025-11-01" and returns "November 01, 2025"
